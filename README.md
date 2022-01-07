@@ -83,7 +83,7 @@ service yandex2mqtt restart
 Для открытия сервиса внешнему миру (и серверу яндекс), настройте nginx proxy на порт указанный в конфиге (по умолчанию 6666):
 ```
 server {
-    server_name  alice.kotlinlang.ru;
+    server_name  your-domain.com;
 
     location / {
         proxy_pass http://127.0.0.1:6666;
