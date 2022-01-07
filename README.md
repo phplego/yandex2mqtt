@@ -23,7 +23,7 @@ apt-get install -y nodejs git make g++ gcc build-essential
 Копируем файлы
 
 ```
-git clone https://github.com/munrexio/yandex2mqtt.git /mnt/data/root/yandex2mqtt
+git clone https://github.com/phplego/yandex2mqtt.git /mnt/data/root/yandex2mqtt
 ```
 
 Задаём права.
