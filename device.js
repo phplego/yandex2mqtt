@@ -1,6 +1,8 @@
 class device {
-  constructor(options) {
-    var id = global.devices.length;
+  constructor(options, mqttClient) {
+    this.client = mqttClient;
+    //var id = 'id' + global.devices.length;
+    var id = options.name + ' - ' + options.room;
     this.data = {
       id: String(id),
       name: options.name || 'Без названия',
@@ -11,72 +13,75 @@ class device {
         mqtt: options.mqtt || [{}]
       },
       capabilities: options.capabilities,
+      properties: options.properties || [],
     }
-    global.devices.push(this);
+    //global.devices.push(this);
+    global.devices[id] = this;
   }
+
   getInfo() {
     return this.data;
   };
-  
 
-  findDevIndex(arr, elem) {
+
+  findIndex(arr, elem) {
     for (var i = 0; i < arr.length; i++) {
-        if (arr[i].type === elem) {
-            return i;
-        }
+      if (arr[i].type === elem) {
+        return i;
+      }
     }
     return false;
-};
+  };
 
 
 
   setState(val, type, inst) {
-    var int;   
-    var topic; 
-    switch (inst) {
-      case 'on':
-          try {
-            int = val ? '1' : '0';
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.instance = inst;
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.value = val;
-            topic = this.data.custom_data.mqtt[this.findDevIndex(this.data.custom_data.mqtt, inst)].set || false;
-            break; 
-          } 
-          catch (err) {              
-            topic = false;
-            console.log(err);
-          }
-      case 'mute':
-          try {
-            int = val ? '1' : '0';
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.instance = inst;
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.value = val;
-            topic = this.data.custom_data.mqtt[this.findDevIndex(this.data.custom_data.mqtt, inst)].set || false;
-            break; 
-          } 
-          catch (err) {              
-            topic = false;
-            console.log(err);
-          }          
-      default:
-          try {
-            int = JSON.stringify(val);
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.instance = inst;
-            this.data.capabilities[this.findDevIndex(this.data.capabilities, type)].state.value = val;
-            topic = this.data.custom_data.mqtt[this.findDevIndex(this.data.custom_data.mqtt, inst)].set || false; 
-          } 
-          catch (err) {              
-            topic = false;
-            console.log(err);
-          }  
-    };
+    var payload;
+    var topic;
+
+    console.log('device.setState() inst =', inst);
+    console.log('this.data.custom_data.mqtt', this.data.custom_data.mqtt);
+
+    payload = this.data.custom_data.mqtt[this.findIndex(this.data.custom_data.mqtt, inst)].set.payload;
+    const state_var = this.data.custom_data.mqtt[this.findIndex(this.data.custom_data.mqtt, inst)].set.state_var;
+    this.data.capabilities[this.findIndex(this.data.capabilities, type)].state.instance = inst;
+    this.data.capabilities[this.findIndex(this.data.capabilities, type)].state.value = val;
+    topic = this.data.custom_data.mqtt[this.findIndex(this.data.custom_data.mqtt, inst)].set.topic || false;
+
+    try {
+      switch (inst) {
+        // case 'mute':{
+        //   break;
+        // }
+        // case 'temperature':{
+        //   break;
+        // }
+        case 'on':{
+          payload[state_var] = val ? 'on' : 'off';
+          break;
+        }
+        default:{
+          payload[state_var] = val;
+        }
+      }
+    }
+    catch (err) {
+      topic = false;
+      console.log(err);
+    }
+
 
     if (topic) {
-      this.client.publish(topic, int);
+      console.log(`>> sending mqtt message. ${topic} ${JSON.stringify(payload)}`);
+
+      if (typeof payload === 'string')
+        this.client.publish(topic, payload);
+      else
+        this.client.publish(topic, JSON.stringify(payload));
     }
     return [
       {
-      	'type': type,
+        'type': type,
         'state': {
           'instance': inst,
           'action_result': {

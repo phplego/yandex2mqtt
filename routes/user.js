@@ -47,7 +47,8 @@ module.exports.query = [
     }
   };
   for (let i in request.body.devices) {
-    r.payload.devices.push(global.devices[request.body.devices[i].id].getInfo());
+    if(request.body.devices[i].id in global.devices)
+      r.payload.devices.push(global.devices[request.body.devices[i].id].getInfo());
   }
   response.send(r);
   }
@@ -65,12 +66,12 @@ module.exports.action = [
   for (var i in request.body.payload.devices) {
     var id = request.body.payload.devices[i].id;
     try {
-
+        console.log('request.body.payload.devices[i].capabilities[0]', request.body.payload.devices[i].capabilities[0]);
         var capabilities = global.devices[id].setState(request.body.payload.devices[i].capabilities[0].state.value , request.body.payload.devices[i].capabilities[0].type, request.body.payload.devices[i].capabilities[0].state.instance);
            
     } catch (err) {
-
-        var capabilities = global.devices[id].setState(true , request.body.payload.devices[i].capabilities[0].type, 'mute');
+        console.log(err);
+        //var capabilities = global.devices[id].setState(true , request.body.payload.devices[i].capabilities[0].type, 'mute');
     }
     
     r.payload.devices.push({ id: id, capabilities: capabilities });
