@@ -1,7 +1,9 @@
-# yandex2mqtt
+# yandex2mqtt (zigbee2mqtt version)
 Мост из Яндекс УД в MQTT на Node.js 
 
-Статья на Хабре https://habr.com/ru/post/465537/
+Статья на Хабре об оригинальном репозитории https://habr.com/ru/post/465537/
+
+ВАЖНО! В этом форке изменен формат описания mqtt-топиков и значений payload
 
 ## Установка
 
