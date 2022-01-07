@@ -3,7 +3,8 @@
 
 Статья на Хабре об оригинальном репозитории https://habr.com/ru/post/465537/
 
-ВАЖНО! В этом форке изменен формат описания mqtt-топиков и значений payload
+**ВАЖНО!** В этом форке изменен формат описания mqtt-топиков и значений payload.
+Также из сервиса убрано шифрование SSL, так как его проще включить на уровне веб-сервера (nginx, apache)
 
 ## Установка
 
@@ -77,6 +78,28 @@ systemctl enable yandex2mqtt.service
 service yandex2mqtt start
 service yandex2mqtt stop
 service yandex2mqtt restart
+```
+
+Для открытия сервиса внешнему миру (и серверу яндекс), настройте nginx proxy на порт указанный в конфиге (по умолчанию 6666):
+```
+server {
+    server_name  alice.kotlinlang.ru;
+
+    location / {
+        proxy_pass http://127.0.0.1:6666;
+    }
+
+
+    listen 433;
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/alice.kotlinlang.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/alice.kotlinlang.ru/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
 ```
 
 
